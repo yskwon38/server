@@ -33,7 +33,6 @@ class InfoXmlTest extends TestCase {
 			['admin_audit'],
 			['comments'],
 			['dav'],
-			['encryption'],
 			['federatedfilesharing'],
 			['federation'],
 			['files'],
