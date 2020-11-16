@@ -65,7 +65,8 @@ class MailPluginTest extends TestCase {
 		$this->contactsManager = $this->createMock(IManager::class);
 		$this->groupManager = $this->createMock(IGroupManager::class);
 		$this->userSession = $this->createMock(IUserSession::class);
-		$this->cloudIdManager = new CloudIdManager();
+		$this->cloudIdManager = new CloudIdManager($this->contactsManager);
+
 		$this->searchResult = new SearchResult();
 	}
 
@@ -82,7 +83,7 @@ class MailPluginTest extends TestCase {
 	 * @param array $expected
 	 * @param bool $reachedEnd
 	 */
-	public function testSearch($searchTerm, $contacts, $shareeEnumeration, $expected, $exactIdMatch, $reachedEnd) {
+	public function testSearch($searchTerm, $contacts, $shareeEnumeration, $expected, $exactIdMatch, $reachedEnd, $dId = 0) {
 		$this->config->expects($this->any())
 			->method('getAppValue')
 			->willReturnCallback(
@@ -104,8 +105,12 @@ class MailPluginTest extends TestCase {
 
 		$this->contactsManager->expects($this->any())
 			->method('search')
-			->with($searchTerm, ['EMAIL', 'FN'])
-			->willReturn($contacts);
+			->willReturnCallback(function ($search, $searchAttributes) use ($searchTerm, $contacts) {
+				if ($search === $searchTerm) {
+					return $contacts;
+				}
+				return [];
+			});
 
 		$moreResults = $this->plugin->search($searchTerm, 2, 0, $this->searchResult);
 		$result = $this->searchResult->asArray();
@@ -383,6 +388,7 @@ class MailPluginTest extends TestCase {
 				['users' => [], 'exact' => ['users' => [['uuid' => 'uid1', 'name' => 'User', 'label' => 'User (test@example.com)','value' => ['shareType' => IShare::TYPE_USER, 'shareWith' => 'test'],]]]],
 				true,
 				false,
+				13,
 			],
 			// data set 14
 			// Current local user found by email => no result
@@ -553,8 +559,12 @@ class MailPluginTest extends TestCase {
 
 		$this->contactsManager->expects($this->any())
 			->method('search')
-			->with($searchTerm, ['EMAIL', 'FN'])
-			->willReturn($contacts);
+			->willReturnCallback(function ($search, $searchAttributes) use ($searchTerm, $contacts) {
+				if ($search === $searchTerm) {
+					return $contacts;
+				}
+				return [];
+			});
 
 		$this->userSession->expects($this->any())
 			->method('getUser')
