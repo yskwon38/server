@@ -49,6 +49,9 @@ use OCA\Files_Sharing\Notification\Notifier;
 use OCA\Files\Event\LoadAdditionalScriptsEvent;
 use OCA\Files\Event\LoadSidebar;
 use OCP\AppFramework\App;
+use OCP\AppFramework\Bootstrap\IBootContext;
+use OCP\AppFramework\Bootstrap\IBootstrap;
+use OCP\AppFramework\Bootstrap\IRegistrationContext;
 use OCP\EventDispatcher\IEventDispatcher;
 use OCP\Federation\ICloudIdManager;
 use OCP\Files\Config\IMountProviderCollection;
@@ -62,7 +65,7 @@ use Psr\Container\ContainerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\EventDispatcher\GenericEvent;
 
-class Application extends App {
+class Application extends App implements IBootstrap {
 	public const APP_ID = 'files_sharing';
 
 	public function __construct(array $urlParams = []) {
@@ -127,7 +130,6 @@ class Application extends App {
 
 		$this->registerMountProviders($mountProviderCollection);
 		$this->registerEventsScripts($dispatcher, $oldDispatcher);
-		$this->setupSharingMenus();
 
 		/**
 		 * Always add main sharing script
@@ -237,5 +239,12 @@ class Application extends App {
 				'expandedState' => 'show_sharing_menu'
 			];
 		});
+	}
+
+	public function register(IRegistrationContext $context): void {
+		$this->setupSharingMenus();
+	}
+
+	public function boot(IBootContext $context): void {
 	}
 }
