@@ -65,15 +65,6 @@ class Application extends \OCP\AppFramework\App implements IBootstrap {
 	 */
 	public function __construct($urlParams = []) {
 		parent::__construct('encryption', $urlParams);
-		$this->encryptionManager = \OC::$server->getEncryptionManager();
-		$this->config = \OC::$server->getConfig();
-		$this->registerServices();
-		if ($this->encryptionManager->isReady()) {
-			$this->registerEncryptionModule();
-			$this->registerHooks();
-			$this->setUp();
-		}
-		\OCP\Util::addScript('encryption', 'encryption');
 	}
 
 	public function setUp() {
@@ -277,5 +268,14 @@ class Application extends \OCP\AppFramework\App implements IBootstrap {
 	}
 
 	public function boot(IBootContext $context): void {
+		$this->encryptionManager = $context->getServerContainer()->getEncryptionManager();
+		$this->config = $context->getServerContainer()->getConfig();
+		$this->registerServices();
+		if ($this->encryptionManager->isReady()) {
+			$this->registerEncryptionModule();
+			$this->registerHooks();
+			$this->setUp();
+		}
+		\OCP\Util::addScript('encryption', 'encryption');
 	}
 }
